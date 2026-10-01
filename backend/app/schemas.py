@@ -28,6 +28,44 @@ class EntryPayload(BaseModel):
     remark: str | None = None
 
 
+class BatchDispatchItem(BaseModel):
+    """批量派发里的一条勾选记录：检修单 id + 本次填写的检修类型与计划工时。"""
+
+    id: int
+    检修类型: str | None = None
+    计划工时: Any = None
+
+
+class BatchActionPayload(BaseModel):
+    """作业班组批量派发 / 批量拉回待派发的整批提交内容。"""
+
+    action: str = Field(default="派发任务", description="派发任务 或 拉回待派发")
+    作业班组: str | None = None
+    items: list[BatchDispatchItem] = Field(default_factory=list)
+    remark: str | None = None
+
+
+class BatchResultItem(BaseModel):
+    """逐条派发结果：卡在哪一项就写在哪一条的 reason 里，不牵连其它记录。"""
+
+    id: int
+    任务编号: str | None = None
+    ok: bool
+    message: str
+    entry: dict[str, Any] | None = None
+
+
+class BatchActionResult(BaseModel):
+    """整批提交结果：整体汇总 + 每一条检修单各自的派发结果。"""
+
+    ok: bool
+    message: str
+    action: str
+    success_count: int = 0
+    failed_count: int = 0
+    results: list[BatchResultItem] = Field(default_factory=list)
+
+
 
 class WindfarmEntry(BaseModel):
     """风电场站明细结构。"""
