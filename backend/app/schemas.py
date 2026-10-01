@@ -28,6 +28,53 @@ class EntryPayload(BaseModel):
     remark: str | None = None
 
 
+class BatchItemPayload(BaseModel):
+    """批量动作里单条检修任务单要提交的内容（检修类型、计划工时可逐条覆盖）。"""
+
+    id: int
+    values: dict[str, Any] = Field(default_factory=dict)
+
+
+class BatchActionPayload(BaseModel):
+    """整批派发/拉回：一个作业班组建一次动作，勾选多条任务单一起提交。"""
+
+    action: str
+    crew: str | None = None
+    items: list[BatchItemPayload] = Field(default_factory=list)
+
+
+class BatchItemResult(BaseModel):
+    """逐条派发结果：成功或被拦都要说明卡在哪一项。"""
+
+    id: int
+    task_no: str | None = None
+    ok: bool
+    message: str
+    entry: dict[str, Any] | None = None
+
+
+class BatchActionResult(BaseModel):
+    """整批动作的汇总：整体成败、逐条结果与作业班组最新剩余工时。"""
+
+    ok: bool
+    action: str
+    message: str
+    crew: str | None = None
+    remaining_hours: float | None = None
+    success_count: int = 0
+    failed_count: int = 0
+    results: list[BatchItemResult] = Field(default_factory=list)
+
+
+class CrewCapacity(BaseModel):
+    """作业班组在本计划周期内的工时占用口径。"""
+
+    crew: str
+    total_hours: float
+    used_hours: float
+    remaining_hours: float
+
+
 
 class WindfarmEntry(BaseModel):
     """风电场站明细结构。"""
